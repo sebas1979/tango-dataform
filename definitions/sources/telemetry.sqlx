@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: "ncmapss-lakehouse",
+  schema: "tango_silver",
+  name: "telemetry",
+  description: "Telemetría por segundo de vuelo (tabla externa sobre los Parquet de Silver)"
+}

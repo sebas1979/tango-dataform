@@ -1,0 +1,18 @@
+config {
+  type: "table",
+  description: "Estado actual de cada motor según su último vuelo"
+}
+
+SELECT
+  aircraft,
+  unit,
+  cycle AS last_cycle,
+  RUL AS rul_actual,
+  t48_cruise_avg,
+  CASE
+    WHEN RUL <= 15 THEN 'Rojo'
+    WHEN RUL <= 30 THEN 'Amarillo'
+    ELSE 'Verde'
+  END AS estado
+FROM ${ref("flight_features")}
+QUALIFY ROW_NUMBER() OVER (PARTITION BY unit ORDER BY cycle DESC) = 1

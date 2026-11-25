@@ -1,0 +1,5 @@
+defaultProject: ncmapss-lakehouse
+defaultLocation: southamerica-east1
+defaultDataset: tango_gold
+defaultAssertionDataset: tango_assertions
+dataformCoreVersion: 3.0.52

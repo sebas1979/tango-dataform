@@ -1,0 +1,35 @@
+config {
+  type: "incremental",
+  uniqueKey: ["unit", "cycle"],
+  description: "UNA FILA X VUELO SOLAMENTE",
+  bigquery: {
+    partitionBy: "DATE(ingested_at)",
+    clusterBy: ["unit"]
+  },
+  assertions: {
+    uniqueKey: ["unit", "cycle"],
+    nonNull: ["aircraft", "unit", "cycle", "RUL"],
+    rowConditions: ["RUL >= 0", "duration_h > 0"]
+  }
+}
+
+SELECT
+  aircraft,
+  unit,
+  cycle,
+  ANY_VALUE(Fc) AS Fc,
+  MIN(RUL) AS RUL,
+  COUNT(*) AS seconds,
+  ROUND(COUNT(*) / 3600, 2) AS duration_h,
+  MAX(alt) AS alt_max,
+  AVG(IF(phase = 'crucero', T48, NULL)) AS t48_cruise_avg,
+  MAX(T48) AS t48_max,
+  AVG(IF(phase = 'crucero', T50, NULL)) AS t50_cruise_avg,
+  AVG(IF(phase = 'crucero', Nf, NULL)) AS nf_cruise_avg,
+  AVG(IF(phase = 'crucero', Nc, NULL)) AS nc_cruise_avg,
+  AVG(IF(phase = 'crucero', Wf, NULL)) AS wf_cruise_avg,
+  AVG(IF(phase = 'crucero', Ps30, NULL)) AS ps30_cruise_avg,
+  MAX(TIMESTAMP(ingested_at)) AS ingested_at
+FROM ${ref("telemetry")}
+${when(incremental(), `WHERE TIMESTAMP(ingested_at) > (SELECT MAX(ingested_at) FROM ${self()})`)}
+GROUP BY aircraft, unit, cycle
